@@ -93,6 +93,8 @@ and this project adheres to
   `interface_version_5`.
 - cosmwasm-vm: Rename trait `Api` to `BackendApi` to better express this is the
   API provided by the VM's backend (i.e. the blockchain).
+- cosmwasm-vm: Rename imports to `addr_canonicalize` and `addr_humanize`
+  ([#802]).
 - contracts: `reflect` contract requires `stargate` feature and supports
   redispatching `Stargate` and `IbcMsg::Transfer` messages ([#692])
 
@@ -100,6 +102,7 @@ and this project adheres to
 [#697]: https://github.com/CosmWasm/cosmwasm/issues/697
 [#736]: https://github.com/CosmWasm/cosmwasm/pull/736
 [#690]: https://github.com/CosmWasm/cosmwasm/issues/690
+[#802]: https://github.com/CosmWasm/cosmwasm/pull/802
 
 ### Deprecated
 
