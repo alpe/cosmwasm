@@ -36,7 +36,7 @@ pub fn init(deps: DepsMut, _env: Env, info: MessageInfo, msg: InitMsg) -> StdRes
 
     let denom = deps.querier.query_bonded_denom()?;
     let invest = InvestmentInfo {
-        owner: deps.api.canonical_address(&info.sender)?,
+        owner: deps.api.addr_canonicalize(&info.sender)?,
         exit_tax: msg.exit_tax,
         bond_denom: denom,
         validator: msg.validator,
@@ -77,8 +77,8 @@ pub fn transfer(
     recipient: HumanAddr,
     send: Uint128,
 ) -> StdResult<Response> {
-    let rcpt_raw = deps.api.canonical_address(&recipient)?;
-    let sender_raw = deps.api.canonical_address(&info.sender)?;
+    let rcpt_raw = deps.api.addr_canonicalize(&recipient)?;
+    let sender_raw = deps.api.addr_canonicalize(&info.sender)?;
 
     let mut accounts = balances(deps.storage);
     accounts.update(&sender_raw, |balance: Option<Uint128>| {
@@ -135,7 +135,7 @@ fn assert_bonds(supply: &Supply, bonded: Uint128) -> StdResult<()> {
 }
 
 pub fn bond(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
-    let sender_raw = deps.api.canonical_address(&info.sender)?;
+    let sender_raw = deps.api.addr_canonicalize(&info.sender)?;
 
     // ensure we have the proper denom
     let invest = invest_info_read(deps.storage).load()?;
@@ -188,7 +188,7 @@ pub fn bond(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
 }
 
 pub fn unbond(deps: DepsMut, env: Env, info: MessageInfo, amount: Uint128) -> StdResult<Response> {
-    let sender_raw = deps.api.canonical_address(&info.sender)?;
+    let sender_raw = deps.api.addr_canonicalize(&info.sender)?;
 
     let invest = invest_info_read(deps.storage).load()?;
     // ensure it is big enough to care
@@ -266,7 +266,7 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> 
     }
 
     // check how much to send - min(balance, claims[sender]), and reduce the claim
-    let sender_raw = deps.api.canonical_address(&info.sender)?;
+    let sender_raw = deps.api.addr_canonicalize(&info.sender)?;
     let mut to_send = balance.amount;
     claims(deps.storage).update(sender_raw.as_slice(), |claim| {
         let claim = claim.ok_or_else(|| StdError::generic_err("no claim for this address"))?;
@@ -389,7 +389,7 @@ pub fn query_token_info(deps: Deps) -> StdResult<TokenInfoResponse> {
 }
 
 pub fn query_balance(deps: Deps, address: HumanAddr) -> StdResult<BalanceResponse> {
-    let address_raw = deps.api.canonical_address(&address)?;
+    let address_raw = deps.api.addr_canonicalize(&address)?;
     let balance = balances_read(deps.storage)
         .may_load(address_raw.as_slice())?
         .unwrap_or_default();
@@ -397,7 +397,7 @@ pub fn query_balance(deps: Deps, address: HumanAddr) -> StdResult<BalanceRespons
 }
 
 pub fn query_claims(deps: Deps, address: HumanAddr) -> StdResult<ClaimsResponse> {
-    let address_raw = deps.api.canonical_address(&address)?;
+    let address_raw = deps.api.addr_canonicalize(&address)?;
     let claims = claims_read(deps.storage)
         .may_load(address_raw.as_slice())?
         .unwrap_or_default();
@@ -409,7 +409,7 @@ pub fn query_investment(deps: Deps) -> StdResult<InvestmentResponse> {
     let supply = total_supply_read(deps.storage).load()?;
 
     let res = InvestmentResponse {
-        owner: deps.api.human_address(&invest.owner)?,
+        owner: deps.api.addr_humanize(&invest.owner)?,
         exit_tax: invest.exit_tax,
         validator: invest.validator,
         min_withdrawal: invest.min_withdrawal,
